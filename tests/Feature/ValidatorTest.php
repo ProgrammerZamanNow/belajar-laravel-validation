@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Rules\RegistrationRule;
+use App\Rules\Uppercase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\App;
@@ -180,6 +182,56 @@ class ValidatorTest extends TestCase
                 $validator->errors()->add("password", "Password tidak boleh sama dengan username");
             }
         });
+        self::assertNotNull($validator);
+
+        self::assertFalse($validator->passes());
+        self::assertTrue($validator->fails());
+
+        $message = $validator->getMessageBag();
+
+        Log::info($message->toJson(JSON_PRETTY_PRINT));
+    }
+
+    public function testValidatorCustomRule()
+    {
+        $data = [
+            "username" => "eko@pzn.com",
+            "password" => "eko@pzn.com"
+        ];
+
+        $rules = [
+            "username" => ["required", "email", "max:100", new Uppercase()],
+            "password" => ["required", "min:6", "max:20", new RegistrationRule()]
+        ];
+
+        $validator = Validator::make($data, $rules);
+        self::assertNotNull($validator);
+
+        self::assertFalse($validator->passes());
+        self::assertTrue($validator->fails());
+
+        $message = $validator->getMessageBag();
+
+        Log::info($message->toJson(JSON_PRETTY_PRINT));
+    }
+
+    public function testValidatorCustomFunctionRule()
+    {
+        $data = [
+            "username" => "eko@pzn.com",
+            "password" => "eko@pzn.com"
+        ];
+
+        $rules = [
+            "username" => ["required", "email", "max:100", function(string $attribute, string $value, \Closure $fail){
+                if(strtoupper($value) != $value){
+                    $fail("The field $attribute must be UPPERCASE");
+                }
+            }],
+            "password" => ["required", "min:6", "max:20", new RegistrationRule()]
+        ];
+
+        $validator = Validator::make($data, $rules);
         self::assertNotNull($validator);
 
         self::assertFalse($validator->passes());
