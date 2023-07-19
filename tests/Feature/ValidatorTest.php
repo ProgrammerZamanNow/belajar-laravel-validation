@@ -262,4 +262,66 @@ class ValidatorTest extends TestCase
         self::assertTrue($validator->passes());
     }
 
+    public function testNestedArray()
+    {
+        $data = [
+            "name" => [
+                "first" => "Eko",
+                "last" => "Kurniawan"
+            ],
+            "address" => [
+                "street" => "Jalan. Mangga",
+                "city" => "Jakarta",
+                "country" => "Indonesia"
+            ]
+        ];
+
+        $rules = [
+            "name.first" => ["required", "max:100"],
+            "name.last" => ["max:100"],
+            "address.street" => ["max:200"],
+            "address.city" => ["required", "max:100"],
+            "address.country" => ["required", "max:100"],
+        ];
+
+        $validator = Validator::make($data, $rules);
+        self::assertTrue($validator->passes());
+
+    }
+
+    public function testNestedIndexedArray()
+    {
+        $data = [
+            "name" => [
+                "first" => "Eko",
+                "last" => "Kurniawan"
+            ],
+            "address" => [
+                [
+                    "street" => "Jalan. Mangga",
+                    "city" => "Jakarta",
+                    "country" => "Indonesia"
+                ],
+                [
+                    "street" => "Jalan. Manggis",
+                    "city" => "Jakarta",
+                    "country" => "Indonesia"
+                ]
+            ]
+        ];
+
+        $rules = [
+            "name.first" => ["required", "max:100"],
+            "name.last" => ["max:100"],
+            "address.*.street" => ["max:200"],
+            "address.*.city" => ["required", "max:100"],
+            "address.*.country" => ["required", "max:100"],
+        ];
+
+        $validator = Validator::make($data, $rules);
+        self::assertTrue($validator->passes());
+
+    }
+
+
 }
