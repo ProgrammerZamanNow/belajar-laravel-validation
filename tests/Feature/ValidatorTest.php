@@ -23,6 +23,28 @@ class ValidatorTest extends TestCase
 
         $validator = Validator::make($data, $rules);
         self::assertNotNull($validator);
+
+        self::assertTrue($validator->passes());
+        self::assertFalse($validator->fails());
+    }
+
+    public function testValidatorInvalid()
+    {
+        $data = [
+            "username" => "",
+            "password" => ""
+        ];
+
+        $rules = [
+            "username" => "required",
+            "password" => "required"
+        ];
+
+        $validator = Validator::make($data, $rules);
+        self::assertNotNull($validator);
+
+        self::assertFalse($validator->passes());
+        self::assertTrue($validator->fails());
     }
 
 }
